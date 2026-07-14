@@ -1,0 +1,6 @@
+node_modules/
+.env
+meetings/*
+!meetings/.gitkeep
+*.log
+.DS_Store

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AI War Room — door</title>
+    <meta http-equiv="refresh" content="0;url=http://127.0.0.1:8787/" />
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        background: #0f1218;
+        color: #e8ecf4;
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+      a {
+        color: #9ec5ff;
+        font-size: 1.25rem;
+      }
+      p {
+        color: #8b95a8;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <p>Entering AI War Room…</p>
+      <p>
+        <a href="http://127.0.0.1:8787/">http://127.0.0.1:8787/</a>
+      </p>
+      <p>
+        <a href="http://127.0.0.1:8787/?debug=1">Debug UI (?debug=1)</a>
+      </p>
+      <p style="font-size: 0.9rem">
+        If this fails, start the server first:<br />
+        <code>Start AI War Room.bat</code>
+      </p>
+    </div>
+    <script>
+      location.replace("http://127.0.0.1:8787/");
+    </script>
+  </body>
+</html>

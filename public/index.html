@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI War Room</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="wallpaper-layer" aria-hidden="true"></div>
+    <div id="app">
+      <header>
+        <h1 id="title-text">AI War Room</h1>
+        <div class="meta">
+          <span id="proxy-badge" class="badge">CLIProxy …</span>
+          <span id="serper-badge" class="badge">Serper …</span>
+          <span id="status-badge" class="badge">—</span>
+          <button type="button" id="btn-lang" class="secondary">中文</button>
+          <button type="button" id="btn-wallpaper" class="secondary">Wallpaper</button>
+          <button type="button" id="btn-new" class="secondary">New session</button>
+        </div>
+      </header>
+
+      <aside id="history-rail">
+        <div class="history-head">
+          <h2 id="history-title">Chats</h2>
+          <button type="button" id="btn-new-side" class="secondary">+</button>
+        </div>
+        <ul id="history-list" class="history-list"></ul>
+        <p class="hint" id="history-hint"></p>
+      </aside>
+
+      <div id="transcript-wrap">
+        <div id="transcript"></div>
+        <div class="speaking" id="speaking-line"></div>
+        <div class="speaking" id="error-line" style="color: var(--danger)"></div>
+      </div>
+
+      <div id="host-bar">
+        <textarea id="host-input" rows="3" placeholder="Host message…"></textarea>
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 9.5rem">
+          <button type="button" id="btn-send">Send round</button>
+          <button type="button" id="btn-search-send" class="secondary">Search &amp; send</button>
+          <span class="hint" id="lock-hint"></span>
+        </div>
+      </div>
+
+      <aside id="sidebar">
+        <section class="panel" id="wallpaper-panel" hidden>
+          <h2 id="wallpaper-title">Wallpaper</h2>
+          <div id="wallpaper-grid" class="wallpaper-grid"></div>
+          <label class="hint" id="wallpaper-dim-label" for="wallpaper-dim">Dim</label>
+          <input type="range" id="wallpaper-dim" min="30" max="92" value="72" />
+        </section>
+
+        <section class="panel">
+          <h2 id="order-title">Speak order</h2>
+          <ul id="order-list" class="order-list"></ul>
+          <p class="hint" id="order-hint"></p>
+        </section>
+
+        <section class="panel">
+          <h2 id="agents-title">Agents</h2>
+          <ul id="agent-list" class="agent-list"></ul>
+          <p class="hint" id="agents-hint"></p>
+          <button type="button" id="btn-refresh-models" class="secondary" style="width: 100%; margin-top: 8px">
+            Refresh models
+          </button>
+        </section>
+      </aside>
+
+      <div id="debug-panel">
+        <strong id="debug-title">Debug</strong>
+        <pre id="debug-pre">Loading…</pre>
+      </div>
+    </div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

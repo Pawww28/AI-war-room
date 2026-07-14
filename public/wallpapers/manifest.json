@@ -1,0 +1,29 @@
+{
+  "defaults": [
+    {
+      "id": "none",
+      "label": "None (solid)",
+      "file": null
+    },
+    {
+      "id": "night-city",
+      "label": "Night city",
+      "file": "night-city.jpg"
+    },
+    {
+      "id": "star-rooftop",
+      "label": "Star rooftop",
+      "file": "star-rooftop.jpg"
+    },
+    {
+      "id": "otaku-den",
+      "label": "Otaku den",
+      "file": "otaku-den.jpg"
+    },
+    {
+      "id": "magic-library",
+      "label": "Magic library",
+      "file": "magic-library.jpg"
+    }
+  ]
+}
