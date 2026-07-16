@@ -189,6 +189,20 @@ async function handleApi(req, res, url) {
       }
     }
 
+    if (req.method === "POST" && rest === "/search") {
+      const body = await readBody(req);
+      try {
+        const result = await orchestrator.runSearchOnly(
+          id,
+          body.query || body.text || body.message || ""
+        );
+        return sendJson(res, 200, result);
+      } catch (err) {
+        const status = err.status || 500;
+        return sendJson(res, status, { error: err.message || String(err) });
+      }
+    }
+
     if (req.method === "POST" && rest === "/respond") {
       const body = await readBody(req);
       try {

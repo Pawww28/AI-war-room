@@ -98,6 +98,7 @@ function ui() {
   $("btn-new").textContent = t(L, "newSession");
   $("btn-wallpaper").textContent = t(L, "wallpaper");
   $("btn-send").textContent = t(L, "sendRound");
+  $("btn-search").textContent = t(L, "searchOnly");
   $("btn-search-send").textContent = t(L, "searchSend");
   $("host-input").placeholder = t(L, "hostPlaceholder");
   $("order-title").textContent = t(L, "orderTitle");
@@ -171,7 +172,7 @@ function renderStatus() {
   el.className = running ? "badge warn" : "badge ok";
 
   const sp = $("speaking-line");
-  if (state.speaking && running) {
+  if (state.speaking && (running || state.speaking.searchOnly)) {
     sp.textContent = `${t(state.lang, "speaking")}: ${state.speaking.displayName} (${state.speaking.index + 1}/${state.speaking.total})`;
   } else {
     sp.textContent = "";
@@ -295,13 +296,16 @@ function webSummary(turn) {
   const q = turn.query || "";
   const lines = (turn.text || "").split("\n");
   const organic = lines.filter((l) => /^\d+\.\s/.test(l.trim())).length;
+  const base = turn.searchOnly
+    ? t(state.lang, "webSearchOnlyHint")
+    : t(state.lang, "webCollapsedHint");
   if (q && organic) {
-    return `${t(state.lang, "webCollapsedHint")} · “${q.slice(0, 80)}${q.length > 80 ? "…" : ""}” · ${organic} ${t(state.lang, "webHits")}`;
+    return `${base} · “${q.slice(0, 80)}${q.length > 80 ? "…" : ""}” · ${organic} ${t(state.lang, "webHits")}`;
   }
   if (q) {
-    return `${t(state.lang, "webCollapsedHint")} · “${q.slice(0, 100)}${q.length > 100 ? "…" : ""}”`;
+    return `${base} · “${q.slice(0, 100)}${q.length > 100 ? "…" : ""}”`;
   }
-  return t(state.lang, "webCollapsedHint");
+  return base;
 }
 
 function renderTranscript() {
@@ -385,6 +389,7 @@ function idle() {
 function updateLocked() {
   const locked = !idle();
   $("btn-send").disabled = locked || !state.session;
+  $("btn-search").disabled = locked || !state.session;
   $("btn-search-send").disabled = locked || !state.session;
   $("host-input").disabled = locked || !state.session;
   $("lock-hint").textContent =
@@ -644,6 +649,7 @@ async function sendRound(withSearch) {
   if (!text) return;
   $("error-line").textContent = "";
   $("btn-send").disabled = true;
+  $("btn-search").disabled = true;
   $("btn-search-send").disabled = true;
   try {
     state.session = await api(`/api/sessions/${state.session.id}/host`, {
@@ -651,6 +657,32 @@ async function sendRound(withSearch) {
       body: JSON.stringify({ text, search: Boolean(withSearch) }),
     });
     $("host-input").value = "";
+    renderTranscript();
+    renderStatus();
+    updateLocked();
+    await refreshHistory();
+  } catch (err) {
+    $("error-line").textContent = `${t(state.lang, "error")}: ${err.message}`;
+  } finally {
+    updateLocked();
+    if (state.debug) refreshDebug();
+  }
+}
+
+/** Call Serper only — append web results, no host turn / agent queue. Keeps input. */
+async function searchOnly() {
+  if (!idle()) return;
+  const text = $("host-input").value.trim();
+  if (!text) return;
+  $("error-line").textContent = "";
+  $("btn-send").disabled = true;
+  $("btn-search").disabled = true;
+  $("btn-search-send").disabled = true;
+  try {
+    state.session = await api(`/api/sessions/${state.session.id}/search`, {
+      method: "POST",
+      body: JSON.stringify({ query: text }),
+    });
     renderTranscript();
     renderStatus();
     updateLocked();
@@ -690,6 +722,7 @@ function wire() {
   $("btn-new").addEventListener("click", () => newSession().catch(showErr));
   $("btn-new-side").addEventListener("click", () => newSession().catch(showErr));
   $("btn-send").addEventListener("click", () => sendRound(false));
+  $("btn-search").addEventListener("click", () => searchOnly());
   $("btn-search-send").addEventListener("click", () => sendRound(true));
   $("btn-wallpaper").addEventListener("click", () => {
     state.wallpaperPanelOpen = !state.wallpaperPanelOpen;

@@ -292,6 +292,89 @@ export function createOrchestrator(store) {
   }
 
   /**
+   * Search-only: call Serper, append a web turn, do not post host or run agents.
+   * @param {string} sessionId
+   * @param {string} query
+   */
+  async function runSearchOnly(sessionId, query) {
+    const session = store.get(sessionId);
+    if (session.status !== "idle_host") {
+      throw Object.assign(new Error("A round is already running"), { status: 409 });
+    }
+    const raw = (query || "").trim();
+    if (!raw) {
+      throw Object.assign(new Error("Search query is empty"), { status: 400 });
+    }
+    if (!config.serper.enabled || !serperConfigured()) {
+      throw Object.assign(
+        new Error(
+          !serperConfigured()
+            ? "SERPER_API_KEY not set"
+            : "Serper is disabled"
+        ),
+        { status: 503 }
+      );
+    }
+
+    const q = stripSearchPrefix(raw) || raw;
+    const round = session.roundCount || 0;
+
+    store.broadcast(session, "speaking", {
+      agentId: "web",
+      displayName: "Web (Serper)",
+      index: 0,
+      total: 1,
+      searchOnly: true,
+    });
+
+    const search = await serperSearch(q);
+    store.appendDebug(session, {
+      type: "serper",
+      ok: search.ok,
+      query: search.query,
+      latencyMs: search.latencyMs,
+      error: search.error,
+      hits: search.organic?.length ?? 0,
+      searchOnly: true,
+    });
+
+    if (search.ok) {
+      store.addTurn(session, {
+        id: `t_${Date.now()}_web`,
+        role: "web",
+        text: search.text,
+        query: search.query,
+        source: "serper",
+        ts: nowIso(),
+        round,
+        searchOnly: true,
+        latencyMs: search.latencyMs,
+      });
+    } else {
+      store.addTurn(session, {
+        id: `t_${Date.now()}_web_fail`,
+        role: "web",
+        text: `(Search failed: ${search.error})`,
+        query: search.query,
+        source: "serper",
+        ts: nowIso(),
+        round,
+        searchOnly: true,
+        error: search.error,
+        latencyMs: search.latencyMs,
+      });
+    }
+
+    store.broadcast(session, "speaking", null);
+    store.broadcast(session, "session", store.publicSession(session));
+    store.broadcast(session, "status", {
+      status: "idle_host",
+      round: session.roundCount,
+    });
+    return store.publicSession(session);
+  }
+
+  /**
    * @param {string} sessionId
    * @param {string} hostText
    * @param {{ search?: boolean }} [options]
@@ -508,5 +591,5 @@ export function createOrchestrator(store) {
     return store.publicSession(session);
   }
 
-  return { runHostTurn, runRespond, computeRespondFocus };
+  return { runHostTurn, runSearchOnly, runRespond, computeRespondFocus };
 }
